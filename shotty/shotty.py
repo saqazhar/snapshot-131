@@ -15,7 +15,48 @@ def filter_instances(project):
 	
 	return instances 
 
+
 @click.group()
+def cli():
+	"""shotty manages snapshots"""
+
+
+@cli.group('volumes')
+def volumes():
+	"""Commands for volumes"""
+@volumes.command('list')
+@click.option('--project', default=None, help="Only instances for project(tag Project: <name>)")	
+def list_volumes(project):
+	"Volumes List"
+	instances = filter_instances(project)
+	
+	for i in instances:
+		for v in i.volumes.all():
+			print(
+			
+			v.id,
+			i.id,
+			v.state,
+			str(v.size)+"GiB",
+			v.encrypted and 'Encrypted' or 'Not Encrypted'			
+			)
+			
+			return
+		return
+
+
+
+
+
+
+
+
+
+
+
+
+
+@cli.group('instances')
 def instances():
 	"""Commands for instances"""
 	
@@ -42,6 +83,7 @@ def list_instances(project):
 @instances.command('stop')
 @click.option('--project', default=None, help="Only instances for project(tag Project: <name>)")	
 def stop_instances(project):
+	"Stop Instance"
 	instances = filter_instances(project)
 	
 	for i in instances:
@@ -51,6 +93,7 @@ def stop_instances(project):
 @instances.command('start')
 @click.option('--project', default=None, help="Only instances for project(tag Project: <name>)")	
 def start_instances(project):		
+	"Starting Instance"
 	instances = filter_instances(project)
 		
 	for i in instances:
@@ -59,5 +102,5 @@ def start_instances(project):
 
 
 if __name__=='__main__':
-	instances()
+	cli()
 	 
