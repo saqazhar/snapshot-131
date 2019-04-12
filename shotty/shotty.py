@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import click
 
 session = boto3.Session(profile_name='shotty')
@@ -60,6 +61,29 @@ def list_volumes(project):
 def instances():
 	"""Commands for instances"""
 	
+	
+	
+@instances.command('snapshots')
+@click.option('--project', default=None, help="Only instances for project(tag Project: <name>)")
+def snapshots_instances(project):
+	"Instance snapshots"
+	instances = filter_instances(project)
+	
+	for i in instances:
+		i.stop()
+		print("Stopping the instance{0}".format(i.id))
+		i.wait_until_stopped()
+		for v in i.volumes.all():
+			v.create_snapshot(Description="Created my Automation")
+		print("Starting")
+		i.start()  
+		i.wait_until_running()
+	return
+			
+
+
+
+	
 @instances.command('list')
 @click.option('--project', default=None, help="Only instances for project(tag Project: <name>)")	
 def list_instances(project):
@@ -88,7 +112,11 @@ def stop_instances(project):
 	
 	for i in instances:
 		print('Stopping the instances')
-		i.stop()
+		try:
+			i.stop()
+		except botocore.exceptions.ClientError:
+			print("Could not stop the instance:{}".format(i.id))
+			continue
 
 @instances.command('start')
 @click.option('--project', default=None, help="Only instances for project(tag Project: <name>)")	
@@ -98,8 +126,11 @@ def start_instances(project):
 		
 	for i in instances:
 		print('Starting the instance={}'.format(i.id))
-		i.start()
-
+		try:
+			i.start()
+		except botocore.exceptions.ClientError:
+			print("Could not start the instance:{}".format(i.id))
+			continue
 
 if __name__=='__main__':
 	cli()
